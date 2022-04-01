@@ -95,6 +95,7 @@ class Annotator:
                                      box[1] + 1 if outside else box[1] + h + 1), fill=color)
                 # self.draw.text((box[0], box[1]), label, fill=txt_color, font=self.font, anchor='ls')  # for PIL>8.0
                 self.draw.text((box[0], box[1] - h if outside else box[1]), label, fill=txt_color, font=self.font)
+                print(box[0])
         else:  # cv2
             p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
             cv2.rectangle(self.im, p1, p2, color, thickness=self.lw, lineType=cv2.LINE_AA)
@@ -106,6 +107,7 @@ class Annotator:
                 cv2.rectangle(self.im, p1, p2, color, -1, cv2.LINE_AA)  # filled
                 cv2.putText(self.im, label, (p1[0], p1[1] - 2 if outside else p1[1] + h + 2), 0, self.lw / 3, txt_color,
                             thickness=tf, lineType=cv2.LINE_AA)
+                print("label:",label, "box:", int(box[0]), int(box[1]),int(box[2]), int(box[3]))
 
     def rectangle(self, xy, fill=None, outline=None, width=1):
         # Add rectangle to image (PIL-only)

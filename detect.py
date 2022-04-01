@@ -84,7 +84,7 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
     # Directories
     save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
-    (save_dir / 'labels' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
+    (save_dir / 'labels').mkdir(parents=True, exist_ok=True)  # make dir
 
     # Load model
     device = select_device(device)
@@ -102,6 +102,10 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
         bs = 1  # batch_size
     vid_path, vid_writer = [None] * bs, [None] * bs
+
+    #TRYING TO GET L,W,H
+    refe=[]
+    prod=[]
 
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
@@ -156,16 +160,33 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
-                    if save_txt:  # Write to file
-                        xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                        line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
-                        with open(txt_path + '.txt', 'a') as f:
-                            f.write(('%g ' * len(line)).rstrip() % line + '\n')
+                    #if save_txt:  # Write to file
+                    xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
+                    xywh2 = (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist()  # NO normalized xywh
+                    line = (cls, *xywh2, conf) if save_conf else (cls, *xywh2)  # label format
+                    c = int(cls)  # integer class
+                    label = None if hide_labels else (names[c] if hide_conf else f'{conf:.2f}')
+                    
+                    if line[0]==1:
+                        refe.append((float(xyxy[0]), float(xyxy[1]),float(xyxy[2]),float(xyxy[3]), float(label)))
+                        #refe.append(line)
+                        #refe.append(label)
+                    else:
+                        prod.append((float(xyxy[0]), float(xyxy[1]),float(xyxy[2]),float(xyxy[3]), float(label)))
+                        #prod.append(line)
+                        #prod.append(label)
+
+                    with open(txt_path + '.txt', 'a') as f:
+                        f.write(('%g ' * len(line)).rstrip() % line  + " conf: " + label + '\n')
 
                     if save_img or save_crop or view_img:  # Add bbox to image
-                        c = int(cls)  # integer class
-                        label = None if hide_labels else (names[c] if hide_conf else f'{names[c]} {conf:.2f}')
+                        
+                        
                         annotator.box_label(xyxy, label, color=colors(c, True))
+                        #print("label annotador:",label)
+                        #print("xyxy:", float(xyxy[0]), float(xyxy[1]),float(xyxy[2]),float(xyxy[3]))
+                        #print("xywh2",xywh2)
+                        #print("xywh",xywh)
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
@@ -206,6 +227,36 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
     if update:
         strip_optimizer(weights)  # update model (to fix SourceChangeWarning)
 
+    #calculate LHW 
+    print("refe", refe, "\n" ,"prod:", prod)
+    #real ref object dimensions:
+    Lr= 30.4
+    Hr= 12.6
+    Wr= 9
+
+    #imagine that 2 pictures are uploadeds FRONT, TOP
+    #front
+    Lf0=prod[0][2]
+    Lf1=refe[0][2]
+    Hf0=prod[0][3]
+    Hf1=refe[0][3]
+
+    #top
+    Lt0=prod[1][2]
+    Lt1=refe[1][2]
+    Wt0=prod[1][3]
+    Wt1=refe[1][3]
+
+    #front
+    Lof=Lr*Lf0/Lf1
+    Ho=Hr*Hf0/Hf1
+    #top
+    Lot=Lr*Lt0/Lt1
+    Wo=Wr*Wt0/Wt1
+
+    Lo=(Lot+Lof)/2
+
+    print("L",Lo," W:",Wo," H:", Ho)
 
 def parse_opt():
     parser = argparse.ArgumentParser()
