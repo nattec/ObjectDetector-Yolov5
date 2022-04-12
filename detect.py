@@ -236,27 +236,35 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
 
     #imagine that 2 pictures are uploadeds FRONT, TOP
     #front
-    Lf0=prod[0][2]
-    Lf1=refe[0][2]
-    Hf0=prod[0][3]
-    Hf1=refe[0][3]
+    if len(prod)<2:
+      print("take another picture, product not recognized") 
+    else:
+      Lf0=prod[0][2]   #front
+      Hf0=prod[0][3]   #front
+      Lt0=prod[1][2]   #top
+      Wt0=prod[1][3]   #top
 
-    #top
-    Lt0=prod[1][2]
-    Lt1=refe[1][2]
-    Wt0=prod[1][3]
-    Wt1=refe[1][3]
+    if len(refe)<2:
+      print("take another picture, reference object not recognized")
+    else:
+      Lf1=refe[0][2]   #front
+      Hf1=refe[0][3]   #front
+      Lt1=refe[1][2]   #top
+      Wt1=refe[1][3]   #top
 
-    #front
-    Lof=Lr*Lf0/Lf1
-    Ho=Hr*Hf0/Hf1
-    #top
-    Lot=Lr*Lt0/Lt1
-    Wo=Wr*Wt0/Wt1
+    #Calculation
+    if len(refe)<2 or len(prod)<2:
+      print("take another picture")
+    else:
+      Lof=Lr*Lf0/Lf1
+      Ho=round(Hr*Hf0/Hf1,3)
+      Lot=Lr*Lt0/Lt1
+      Wo=round(Wr*Wt0/Wt1,3)
+      Lo=round((Lot+Lof)/2 ,3)
 
-    Lo=(Lot+Lof)/2
-
-    print("L",Lo," W:",Wo," H:", Ho)
+      print("L:",Lo," W:",Wo," H:", Ho, "Lof:", Lof, "Lot:", Lot)
+      with open(txt_path + '.txt', 'a') as f:
+        f.write( "L:"+str(Lo)+"  W:"+str(Wo)+"  H:"+ str(Ho) + '\n')
 
 def parse_opt():
     parser = argparse.ArgumentParser()
