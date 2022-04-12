@@ -168,11 +168,11 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
                     label = None if hide_labels else (names[c] if hide_conf else f'{conf:.2f}')
                     
                     if line[0]==1:
-                        refe.append((float(xyxy[0]), float(xyxy[1]),float(xyxy[2]),float(xyxy[3]), float(label)))
+                        refe.append((float(xywh2[0]), float(xywh2[1]),float(xywh2[2]),float(xywh2[3]), float(label)))
                         #refe.append(line)
                         #refe.append(label)
                     else:
-                        prod.append((float(xyxy[0]), float(xyxy[1]),float(xyxy[2]),float(xyxy[3]), float(label)))
+                        prod.append((float(xywh2[0]), float(xywh2[1]),float(xywh2[2]),float(xywh2[3]), float(label)))
                         #prod.append(line)
                         #prod.append(label)
 
@@ -240,27 +240,33 @@ def run(weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
       print("take another picture, product not recognized") 
     else:
       Lf0=prod[0][2]   #front
-      Hf0=prod[0][3]   #front
+      H0=prod[0][3]   #front
       Lt0=prod[1][2]   #top
-      Wt0=prod[1][3]   #top
+      W0=prod[1][3]   #top
+      qf0=prod[0][4]  #front
+      qt0=prod[1][4]  #top
 
     if len(refe)<2:
       print("take another picture, reference object not recognized")
     else:
       Lf1=refe[0][2]   #front
-      Hf1=refe[0][3]   #front
+      H1=refe[0][3]   #front
       Lt1=refe[1][2]   #top
-      Wt1=refe[1][3]   #top
+      W1=refe[1][3]   #top
+      qf1=refe[0][4]  #front
+      qt1=refe[1][4]  #top
 
     #Calculation
     if len(refe)<2 or len(prod)<2:
       print("take another picture")
     else:
       Lof=Lr*Lf0/Lf1
-      Ho=round(Hr*Hf0/Hf1,3)
+      Ho=round(Hr*H0/H1,2)
       Lot=Lr*Lt0/Lt1
-      Wo=round(Wr*Wt0/Wt1,3)
-      Lo=round((Lot+Lof)/2 ,3)
+      Wo=round(Wr*W0/W1,2)
+      qt=(qt0+qt1)/2
+      qf=(qf0+qf1)/2
+      Lo=round((Lot*qt+Lof*qf)/(qt+qf) ,2)
 
       print("L:",Lo," W:",Wo," H:", Ho, "Lof:", Lof, "Lot:", Lot)
       with open(txt_path + '.txt', 'a') as f:
