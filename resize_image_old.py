@@ -49,13 +49,16 @@ if __name__ == "__main__":
             len(fnames), raw_dir, target_size
         )
     )
+
+    num=1
     for i, fname in enumerate(fnames):
         print(".", end="", flush=True)
         img = cv2.imread(fname)
         img_small = cv2.resize(img, target_size)
-        new_fname = "{}.{}".format(str(i), ext)
+        new_fname = "{}.{}".format(str(num), ext)
         small_fname = os.path.join(save_dir, new_fname)
         cv2.imwrite(small_fname, img_small)
+        num= num-1
     print(
         "\nDone resizing {} files.\nSaved to directory: `{}`".format(
             len(fnames), save_dir
