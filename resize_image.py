@@ -1,66 +1,21 @@
-# -*- coding: utf-8 -*-
-"""resize_image.py
-
-"""
-
+# RESIZE import the modules
 import os
-import glob
+from os import listdir
 import cv2
 
-if __name__ == "__main__":
-    import argparse
+# get the path/directory
+folder_dir = "/content/yolov5/test_orig"
+save_dir = "/content/yolov5/test_2"
+dim=(403,302)
+i=1
 
-    parser = argparse.ArgumentParser(
-        description="Resize raw images to uniformed target size."
-    )
-    parser.add_argument(
-        "--raw-dir",
-        help="Directory path to raw images.",
-        default="./data/raw",
-        type=str,
-    )
-    parser.add_argument(
-        "--save-dir",
-        help="Directory path to save resized images.",
-        default="./data/images",
-        type=str,
-    )
-    parser.add_argument(
-        "--ext", help="Raw image files extension to resize.", default="jpg", type=str
-    )
-    parser.add_argument(
-        "--target-size",
-        help="Target size to resize as a tuple of 2 integers.",
-        default="(800, 600)",
-        type=str,
-    )
-    args = parser.parse_args()
-
-    raw_dir = args.raw_dir
-    save_dir = args.save_dir
-    ext = args.ext
-    target_size = eval(args.target_size)
-    msg = "--target-size must be a tuple of 2 integers"
-    assert isinstance(target_size, tuple) and len(target_size) == 2, msg
-    fnames = glob.glob(os.path.join(raw_dir, "*.{}".format(ext)))
-    os.makedirs(save_dir, exist_ok=True)
-    print(
-        "{} files to resize from directory `{}` to target size:{}".format(
-            len(fnames), raw_dir, target_size
-        )
-    )
-
-    num=1
-    for i, fname in enumerate(fnames):
-        print(".", end="", flush=True)
-        img = cv2.imread(fname)
-        img_small = cv2.resize(img, target_size)
-        new_fname = "{}.{}".format(str(num), ext)
-        small_fname = os.path.join(save_dir, new_fname)
-        cv2.imwrite(small_fname, img_small)
-        num= num-1
-    print(
-        "\nDone resizing {} files.\nSaved to directory: `{}`".format(
-            len(fnames), save_dir
-        )
-    )
+for image in os.listdir(folder_dir):
+  if image.endswith(".jpg"):
+    
+    print(image)
+    img = cv2.imread(os.path.join(folder_dir,image))
+    img_small = cv2.resize(img, dim)
+    new_fname = "{}.{}".format(str(image.split('.')[0]), "jpg")
+    small_fname = os.path.join(save_dir, new_fname)
+    cv2.imwrite(small_fname, img_small)
+    i=i-1
