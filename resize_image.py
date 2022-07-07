@@ -3,6 +3,9 @@ import os
 from os import listdir
 import cv2
 
+#create path
+os.mkdir("/content/yolov5/test_2")
+
 # get the path/directory
 folder_dir = "/content/yolov5/test_orig"
 save_dir = "/content/yolov5/test_2"
